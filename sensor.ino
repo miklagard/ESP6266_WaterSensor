@@ -118,7 +118,6 @@ void setup() {
   connectWifi();
   bindRoutes();
   startWebServer();
-
 }
 
 void loop() {
