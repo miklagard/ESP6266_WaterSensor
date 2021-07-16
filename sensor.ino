@@ -10,15 +10,14 @@
  * 
  * License: GPL 3 https://www.gnu.org/licenses/gpl-3.0.txt
  */
-
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 
 const int ANALOG_PIN_FOR_WATER_SENSOR = 0;
 const int DIGITAL_PIN_FOR_ENABLING_WATER_SENSOR = 5; /* D3 on board */
-const char *SSID_FOR_WIFI = "FRITZ!Box 7560 QQ"; 
-const char *PASSWORD_FOR_WIFI = "99264498493146391238";
+const char *SSID_FOR_WIFI = "<your ssid>"; 
+const char *PASSWORD_FOR_WIFI = "<your wifi password>";
 const int HTTP_PORT_FOR_WEB_SERVER = 80;
 const int REFRESH_INTERVAL_FOR_WEB = 1000; /* Miliseconds */
 const int BOUD_RATE_FOR_SERIAL_DEBUG = 115200;
@@ -41,12 +40,12 @@ const char MAIN_page[] PROGMEM = R"=====(
     .outer-box { width: 80px; height: 400px; position: relative; background-color: #dddddd }
     .inner-box { width: 80px; bottom: 0; left: 0; position: absolute; background-color: #d4f1f9 }
   </style>
-
   <script>
     setInterval(function() {
       $.ajax({
         url: '/data/',
         success: function(result) {
+          $("#value").text(result['level']);
           level = result['level'] - 40;
           height = level * 40;
           $(".inner-box").css("height", height + "px");      
@@ -65,6 +64,10 @@ const char MAIN_page[] PROGMEM = R"=====(
   <div class="outer-box">
     <div class="inner-box"></div>
   </div>
+  <div class="received">
+    <span>Value: </span>
+    <span id="value"></span>
+  </div>
 </body>
 </html>
 
@@ -78,19 +81,18 @@ void handleAjax() {
   digitalWrite(DIGITAL_PIN_FOR_ENABLING_WATER_SENSOR, HIGH);
   value = analogRead(ANALOG_PIN_FOR_WATER_SENSOR);
   digitalWrite(DIGITAL_PIN_FOR_ENABLING_WATER_SENSOR, LOW);
-
   server.send(200, "application/json", "{\"level\": " + String(value) + "}");
 }
 
 void connectWifi() {
   Serial.print("Configuring access point...");
   WiFi.begin(SSID_FOR_WIFI, PASSWORD_FOR_WIFI);
-
+  
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-
+  
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
